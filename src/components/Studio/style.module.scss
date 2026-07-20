@@ -1,11 +1,572 @@
-.studio {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+$bg-black: #07080a;
+$panel-bg: #0b0c0e;
+$accent-neon: #C9FF33;
+$border-muted: rgba(255, 255, 255, 0.05);
+$text-bright: #F4F4F5;
+$text-dark: #71717A;
+
+// Breakpoints
+$bp-tablet: 1024px;
+$bp-mobile: 640px;
+
+.studioView {
+  background-color: $bg-black;
+  min-height: 100vh;
+  width: 100%;
+  color: $text-bright;
+  padding-top: 64px; // Clear structural header spacing
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.stageLabel {
+  font-family: "Roboto Mono", monospace;
+  font-size: 10px;
+  color: $accent-neon;
+  letter-spacing: 0.06em;
+}
+
+.mainTitle {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: clamp(26px, 5vw, 38px);
+  line-height: 1.1;
+  margin: 6px 0 0 0;
+}
+
+// ==================== STATE 01 STYLING ====================
+.ingestContainer {
+  max-width: 1200px;
+  margin: 80px auto 0 auto;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1;
-  background: #08090A;
+
+  @media (max-width: $bp-mobile) {
+    margin-top: 40px;
+    padding: 0 16px;
+  }
+
+  .ingestHeader {
+    text-align: center;
+    margin-bottom: 32px;
+
+    .subtitle {
+      font-family: "Roboto Mono", monospace;
+      font-size: 13px;
+      color: $text-dark;
+      margin-top: 12px;
+      padding: 0 8px;
+    }
+  }
+
+  .dropZone {
+    width: 100%;
+    height: 480px;
+    border: 1px solid $border-muted;
+    background-color: rgba(11, 12, 14, 0.4);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    @media (max-width: $bp-tablet) {
+      height: 380px;
+    }
+
+    @media (max-width: $bp-mobile) {
+      height: 300px;
+    }
+
+    .hiddenInput {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .dropZoneContent {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 0 16px;
+      text-align: center;
+
+      .uploadIconBox {
+        width: 56px;
+        height: 56px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $accent-neon;
+        background: rgba(201, 255, 51, 0.02);
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      .actionText {
+        font-family: "Roboto Mono", monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+      }
+
+      .metaText {
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        color: $text-dark;
+      }
+    }
+
+    &.dragging,
+    &:hover,
+    &:focus-within {
+      border-color: rgba(201, 255, 51, 0.4);
+      background-color: rgba(201, 255, 51, 0.01);
+      box-shadow: inset 0 0 20px rgba(201, 255, 51, 0.03);
+    }
+  }
+
+  .telemetryFooter {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+
+    @media (max-width: $bp-mobile) {
+      grid-template-columns: 1fr;
+      margin-top: 24px;
+    }
+
+    .telemetryCard {
+      background: $panel-bg;
+      border: 1px solid $border-muted;
+      padding: 16px;
+      border-radius: 4px;
+
+      h4 {
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        color: $text-dark;
+        margin: 0 0 6px 0;
+        letter-spacing: 0.05em;
+      }
+
+      p {
+        font-family: "Roboto Mono", monospace;
+        font-size: 12px;
+        margin: 0;
+        color: $text-bright;
+      }
+    }
+  }
+}
+
+// ==================== STATE 02 STYLING ====================
+.workspaceContainer {
+  padding: 24px;
+  max-width: 1800px;
+  margin: 0 auto;
+
+  @media (max-width: $bp-mobile) {
+    padding: 16px;
+  }
+
+  .workspaceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 1px solid $border-muted;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .headerActions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+
+      .swapBtn {
+        background: none;
+        border: 1px solid $border-muted;
+        color: $text-bright;
+        font-family: "Roboto Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        padding: 8px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: border-color 0.2s ease, color 0.2s ease;
+
+        &:hover,
+        &:focus-visible {
+          border-color: $accent-neon;
+          color: $accent-neon;
+        }
+      }
+    }
+
+    .streamInfo {
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      color: $text-dark;
+      white-space: nowrap;
+    }
+  }
+
+  .workspaceGrid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    min-height: 560px;
+
+    @media (max-width: $bp-tablet) {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+  }
+
+  // Sidebar Controls
+  .controlSidebar {
+    background: $panel-bg;
+    border: 1px solid $border-muted;
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    @media (max-width: $bp-tablet) {
+      order: 2;
+    }
+
+    .sidebarHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding-bottom: 12px;
+
+      h3 {
+        font-family: "Roboto Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        margin: 0;
+      }
+
+      .resetBtn {
+        background: none;
+        border: none;
+        color: $text-dark;
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+          color: $text-bright;
+        }
+      }
+    }
+
+    .controlGroup {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .controlLabelRow {
+        display: flex;
+        justify-content: space-between;
+        font-family: "Roboto Mono", monospace;
+        font-size: 11px;
+        color: $text-dark;
+
+        span {
+          color: $text-bright;
+        }
+
+        .accentText {
+          color: $accent-neon;
+        }
+      }
+
+      .slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        outline: none;
+
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: $accent-neon;
+          cursor: pointer;
+          box-shadow: 0 0 6px $accent-neon;
+        }
+
+        &::-moz-range-thumb {
+          width: 10px;
+          height: 10px;
+          border: none;
+          border-radius: 50%;
+          background: $accent-neon;
+          cursor: pointer;
+          box-shadow: 0 0 6px $accent-neon;
+        }
+
+        &:focus-visible {
+          outline: 2px solid $accent-neon;
+          outline-offset: 4px;
+        }
+      }
+
+      .matrixSelectorGrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+
+        .matrixBtn {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid $border-muted;
+          color: $text-dark;
+          padding: 8px 0;
+          font-family: "Roboto Mono", monospace;
+          font-size: 11px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+          &.activeMatrix {
+            background: $accent-neon;
+            color: #000;
+            border-color: $accent-neon;
+            font-weight: bold;
+          }
+
+          &:focus-visible {
+            outline: 2px solid $accent-neon;
+            outline-offset: 2px;
+          }
+        }
+      }
+    }
+  }
+  .viewportArea {
+    border: 1px solid $border-muted;
+    background: $panel-bg;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: $bp-tablet) {
+      order: 1;
+    }
+
+    .viewportHeader,
+    .viewportFooter {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 10px;
+      color: $text-dark;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      gap: 8px;
+    }
+
+    .viewportFooter {
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: none;
+    }
+
+    .canvasContainer {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      position: relative;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 16px 16px;
+
+      @media (max-width: $bp-mobile) {
+        padding: 16px;
+      }
+
+      .previewFrame {
+        position: relative;
+        width: 100%;
+        height: 440px;
+        max-width: 100%;
+
+        @media (max-width: $bp-tablet) {
+          height: 360px;
+        }
+
+        @media (max-width: $bp-mobile) {
+          height: 260px;
+        }
+      }
+
+      .previewPlaceholder {
+        object-fit: contain;
+        opacity: 0.85;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .centerOverlayBadge {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(7, 8, 10, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px 32px;
+        font-family: "Rajdhani", sans-serif;
+        font-size: clamp(20px, 4vw, 36px);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 90%;
+        pointer-events: none;
+
+        .subBadge {
+          font-family: "Roboto Mono", monospace;
+          font-size: 9px;
+          color: $text-dark;
+          letter-spacing: 0.02em;
+          margin-top: 4px;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 2px 8px;
+        }
+      }
+    }
+  }
+
+  .filterDock {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) 240px;
+    border: 1px solid $border-muted;
+    background: $panel-bg;
+    margin-top: 24px;
+    border-radius: 6px;
+    overflow: hidden;
+
+    @media (max-width: $bp-tablet) {
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 2px;
+      }
+    }
+
+    .dockTab {
+      background: none;
+      border: none;
+      border-right: 1px solid $border-muted;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      cursor: pointer;
+      text-align: left;
+      transition: background-color 0.2s ease;
+
+      @media (max-width: $bp-tablet) {
+        flex: 0 0 160px;
+      }
+
+      .tabNum {
+        font-family: "Roboto Mono", monospace;
+        font-size: 9px;
+        color: $text-dark;
+        margin-bottom: 6px;
+        white-space: nowrap;
+      }
+
+      .tabLabel {
+        font-family: "Roboto Mono", monospace;
+        font-size: 12px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      &.activeTab {
+        background-color: $accent-neon;
+
+        .tabNum {
+          color: rgba(0, 0, 0, 0.6);
+        }
+
+        .tabLabel {
+          color: #000;
+          font-weight: 700;
+        }
+      }
+
+      &:focus-visible {
+        outline: 2px solid $accent-neon;
+        outline-offset: -2px;
+      }
+    }
+
+    .dockExportInfo {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      font-family: "Roboto Mono", monospace;
+      font-size: 10px;
+      color: $text-dark;
+
+      @media (max-width: $bp-tablet) {
+        flex: 0 0 200px;
+      }
+
+      strong {
+        color: $text-bright;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+    }
+  }
 }

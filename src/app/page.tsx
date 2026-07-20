@@ -1,5 +1,5 @@
 import styles from "./page.module.css";
-import Studio from "@/components/Stage";
+import Studio from "@/components/Studio";
 
 export default function Home() {
   return (

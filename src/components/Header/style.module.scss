@@ -1,9 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+// Design Tokens
+$bg-color: #0B0C0E;
+$text-primary: #F4F4F5;
+$text-secondary: #71717A;
+$accent-neon: #C9FF33; // Signature tactical lime green
+$border-color: rgba(255, 255, 255, 0.08);
+
 .header {
   position: fixed;
-  z-index: 10;
+  z-index: 50;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 80px;
-  background: #0B0C0E;
+  width: 100%;
+  height: 64px;
+  background: $bg-color;
+  border-bottom: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  box-sizing: border-box;
+
+  .body {
+    max-width: 1800px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // --- Left Section Configurations ---
+  .leftSection {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .branding {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .title {
+        color: $text-primary;
+        font-family: "Rajdhani", sans-serif;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        font-weight: 700;
+        text-transform: lowercase;
+      }
+
+      .engineIcon {
+        width: 14px;
+        height: 14px;
+        color: $text-secondary;
+        opacity: 0.6;
+      }
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: $border-color;
+    }
+
+    .statusLabel {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: $text-secondary;
+      letter-spacing: 0.05em;
+
+      .indicatorDot {
+        width: 6px;
+        height: 6px;
+        background-color: $accent-neon;
+        border-radius: 50%;
+        box-shadow: 0 0 8px $accent-neon;
+        display: inline-block;
+        animation: pulse 2s infinite ease-in-out;
+      }
+    }
+  }
+
+  // --- Right Section Configurations ---
+  .rightSection {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .stateBadge {
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      color: $text-primary;
+      border: 1px solid $border-color;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 6px 12px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .exportBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: #000000;
+      background-color: $accent-neon;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: lighten($accent-neon, 10%);
+        box-shadow: 0 0 15px rgba(201, 255, 51, 0.4);
+        transform: translateY(-1px);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        background-color: #18191c;
+        color: rgba(255, 255, 255, 0.15);
+        border: 1px solid $border-color;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.7;
+  }
 }

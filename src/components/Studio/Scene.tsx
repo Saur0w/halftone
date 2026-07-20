@@ -36,6 +36,7 @@ function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, 
 
     useEffect(() => {
         if (!texture) return;
+        // eslint-disable-next-line
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.wrapS = THREE.ClampToEdgeWrapping;

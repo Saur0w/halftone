@@ -16,7 +16,6 @@ import styles from "./style.module.scss";
 
 gsap.registerPlugin(useGSAP);
 
-// Static data lives outside the component so it isn't re-created on every render.
 const FILTERS = [
     { id: "halftone", label: "HALFTONE PRINT", num: "01" },
     { id: "dither", label: "DITHER MODE", num: "02" },
@@ -38,7 +37,6 @@ export default function StudioManager() {
     const [activeFilter, setActiveFilter] = useState<FilterId>("halftone");
     const [isDragging, setIsDragging] = useState(false);
 
-    // Controlled adjustment values (previously uncontrolled `defaultValue`s).
     const [brightness, setBrightness] = useState(8);
     const [contrast, setContrast] = useState(1.24);
     const [dotScale, setDotScale] = useState(6);
@@ -51,7 +49,6 @@ export default function StudioManager() {
     const processFile = useCallback((file: File | undefined) => {
         if (!file || !file.type.startsWith("image/")) return;
 
-        // Release the previous blob URL before creating a new one to avoid leaking memory.
         if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
 
         const url = URL.createObjectURL(file);
@@ -59,7 +56,6 @@ export default function StudioManager() {
         setImageSrc(url);
     }, []);
 
-    // Clean up the last object URL if the component unmounts mid-session.
     useEffect(() => {
         return () => {
             if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
@@ -69,7 +65,7 @@ export default function StudioManager() {
     const handleFileChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
             processFile(e.target.files?.[0]);
-            e.target.value = ""; // allow re-selecting the same file later
+            e.target.value = "";
         },
         [processFile]
     );
@@ -97,16 +93,13 @@ export default function StudioManager() {
     }, []);
 
     const handleExport = useCallback(() => {
-        // TODO: wire up the real export pipeline
         alert("Exporting execution payload...");
     }, []);
 
-    // Respect reduced-motion preferences for every animation in this component.
     const prefersReducedMotion =
         typeof window !== "undefined" &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Entrance animation for the ingest (upload) state.
     useGSAP(
         () => {
             if (imageSrc || prefersReducedMotion) return;
@@ -119,7 +112,6 @@ export default function StudioManager() {
         { scope: containerRef, dependencies: [imageSrc] }
     );
 
-    // Entrance animation for the workspace (editing) state.
     useGSAP(
         () => {
             if (!imageSrc || prefersReducedMotion) return;
@@ -145,7 +137,6 @@ export default function StudioManager() {
         { scope: containerRef, dependencies: [imageSrc] }
     );
 
-    // Subtle pulse on the drop zone while a file is dragged over it.
     useGSAP(
         () => {
             if (!dropZoneRef.current || prefersReducedMotion) return;
@@ -166,7 +157,6 @@ export default function StudioManager() {
             <Header activeState={imageSrc ? "02" : "01"} onExport={handleExport} />
 
             {!imageSrc ? (
-                /* ==================== STATE 01: SOURCE INGEST ==================== */
                 <main className={styles.ingestContainer}>
                     <div className={styles.ingestHeader}>
                         <span className={styles.stageLabel}>STATE 01 / SOURCE INGEST</span>
@@ -219,18 +209,16 @@ export default function StudioManager() {
                     </footer>
                 </main>
             ) : (
-                /* ==================== STATE 02: SHADER WORKSPACE ==================== */
                 <main className={styles.workspaceContainer}>
                     <div className={styles.workspaceHeader}>
                         <div className={styles.headerTitleGroup}>
-                            <span className={styles.stageLabel}>STATE 02 / ACTIVE FILTERING</span>
-                            <h2 className={styles.mainTitle}>Shader workspace</h2>
+                            <span className={styles.stageLabel}>ACTIVE FILTERING</span>
+                            <h2 className={styles.mainTitle}>Workspace</h2>
                         </div>
                         <div className={styles.headerActions}>
                             <button className={styles.swapBtn} onClick={handleReturnToIngest}>
                                 ← NEW SOURCE
                             </button>
-                            <div className={styles.streamInfo}>SOURCE_RENDER.PNG / 16.7 MS / 60 FPS</div>
                         </div>
                     </div>
 
@@ -341,20 +329,14 @@ export default function StudioManager() {
                                         className={styles.previewPlaceholder}
                                     />
                                 </div>
-                                <div className={styles.centerOverlayBadge}>
-                                    {activeFilter.toUpperCase()}
-                                    <span className={styles.subBadge}>GPU SHADER OUTPUT / 001</span>
-                                </div>
                             </div>
 
                             <div className={styles.viewportFooter}>
                                 <span>DISPLAY P3 / LINEAR</span>
-                                <span>GPU 18% - VRAM 124 MB</span>
                             </div>
                         </section>
                     </div>
 
-                    {/* Bottom Dock Menu Navigation Filters */}
                     <nav className={styles.filterDock}>
                         {FILTERS.map((filter) => (
                             <button

@@ -1,108 +1,116 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { Suspense, useMemo, useRef, useEffect, type RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { shaderMaterial, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import vertexShader from "@/lib/Shaders/geo.vert";
-import fragmentShader from "@/lib/Shaders/grade.frag";
-import {
-    buildGradeUniforms,
-    enableGradeMipmaps,
-    type GradeUniformValues
-} from "@/lib/Shaders/gradeUniforms";
+import { useTexture } from "@react-three/drei";
+import { DitherFragment } from "@/lib/Shaders/ditherShader";
+import { VertexFragment } from "@/lib/Shaders/geoShader";
 
 interface SceneProps {
     imageSrc: string;
-    settings: GradeUniformValues;
+    exportRef?: RefObject<(() => void) | null>;
 }
 
-const PhotoGradingMaterial = shaderMaterial(
-    {
-        u_texture: null,
-        u_resolution: new THREE.Vector2(1, 1),
-        u_time: 0,
-        u_temperature: 0,
-        u_tint: 0,
-        u_exposure: 0,
-        u_brightness: 0,
-        u_contrast: 1,
-        u_highlights: 0,
-        u_shadows: 0,
-        u_whites: 0,
-        u_blacks: 0,
-        u_useCurves: false,
-        u_curveMaster: null,
-        u_curveR: null,
-        u_curveG: null,
-        u_curveB: null,
-        u_vibrance: 0,
-        u_saturation: 0,
-        u_clarity: 0,
-        u_textureAmt: 0,
-        u_dehaze: 0,
-        u_hueMix: new Array(8).fill(0),
-        u_satMix: new Array(8).fill(0),
-        u_lumMix: new Array(8).fill(0),
-        u_gradeShadows: new THREE.Vector3(0, 0, 0),
-        u_gradeMidtones: new THREE.Vector3(0, 0, 0),
-        u_gradeHighlights: new THREE.Vector3(0, 0, 0),
-        u_gradeBlending: 0.5,
-        u_gradeBalance: 0,
-        u_vignetteAmount: 0,
-        u_vignetteMidpoint: 0.6,
-        u_vignetteFeather: 0.4,
-        u_vignetteRoundness: 0.6,
-        u_grainAmount: 0,
-        u_grainSize: 2,
-        u_grainRoughness: 0.5,
-        u_sharpenAmount: 0,
-        u_sharpenRadius: 1,
-        u_outputMode: 0,
-        u_dotSize: 6,
-        u_dotGap: 6,
-        u_matrixSize: 8,
-    },
-    vertexShader,
-    fragmentShader
-);
+function PostProcessing({ imageSrc, exportRef }: SceneProps) {
+    const materialRef = useRef<THREE.ShaderMaterial>(null);
+    const meshRef = useRef<THREE.Mesh>(null);
+    const { size, gl, scene, camera } = useThree();
 
-function PostProcessingQuad({ imageSrc, settings }: SceneProps) {
-    const materialRef = useRef<InstanceType<typeof PhotoGradingMaterial>>(null);
-    const { size } = useThree();
     const texture = useTexture(imageSrc);
 
     useEffect(() => {
-        if (texture) {
-            enableGradeMipmaps(texture);
-        }
+        if (!texture) return;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        texture.needsUpdate = true;
     }, [texture]);
 
-    const resolution = useMemo(() => new THREE.Vector2(size.width, size.height), [size]);
-    const gradingUniforms = useMemo(() => {
-        return buildGradeUniforms(texture, resolution, settings);
-    }, [texture, resolution, settings]);
+    const uniforms = useMemo(() => ({
+        u_texture: { value: texture },
+        u_resolution: { value: new THREE.Vector2(size.width, size.height) },
+        u_time: { value: 0 }
+    }), [texture, size.width, size.height]);
 
     useFrame((state) => {
-        if (materialRef.current) {
-            materialRef.current.u_time = state.clock.getElapsedTime();
+        if (materialRef.current?.uniforms.u_time) {
+            materialRef.current.uniforms.u_time.value = state.clock.getElapsedTime();
         }
     });
 
+    const imageAspect = texture.image ? texture.image.width / texture.image.height : 1;
+    const canvasAspect = size.width / size.height;
+    
+    let scaleX = 1;
+    let scaleY = 1;
+    
+    if (imageAspect > canvasAspect) {
+        scaleY = canvasAspect / imageAspect;
+    } else {
+        scaleX = imageAspect / canvasAspect;
+    }
+
+    useEffect(() => {
+        if (!exportRef) return;
+
+        exportRef.current = () => {
+            if (!texture.image || !meshRef.current) return;
+
+            const naturalWidth = texture.image.naturalWidth || texture.image.width;
+            const naturalHeight = texture.image.naturalHeight || texture.image.height;
+
+            const originalPixelRatio = gl.getPixelRatio();
+            gl.setPixelRatio(1);
+            gl.setSize(naturalWidth, naturalHeight, false);
+            
+            if (materialRef.current?.uniforms.u_resolution) {
+                materialRef.current.uniforms.u_resolution.value.set(naturalWidth, naturalHeight);
+            }
+            meshRef.current.scale.set(1, 1, 1);
+            meshRef.current.updateMatrixWorld(true);
+
+            gl.render(scene, camera);
+            const dataUrl = gl.domElement.toDataURL("image/png", 1.0);
+
+            gl.setPixelRatio(originalPixelRatio);
+            gl.setSize(size.width, size.height, false);
+            
+            if (materialRef.current?.uniforms.u_resolution) {
+                materialRef.current.uniforms.u_resolution.value.set(size.width, size.height);
+            }
+            meshRef.current.scale.set(scaleX, scaleY, 1);
+            meshRef.current.updateMatrixWorld(true);
+            gl.render(scene, camera);
+
+            const downloadAnchor = document.createElement("a");
+            downloadAnchor.download = `halftone_export_${Date.now()}.png`;
+            downloadAnchor.href = dataUrl;
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        };
+
+        return () => {
+            exportRef.current = null;
+        };
+    }, [gl, scene, camera, texture, size, exportRef, scaleX, scaleY]);
+
     return (
-        <mesh scale={[size.width, size.height, 1]}>
+        <mesh ref={meshRef} scale={[scaleX, scaleY, 1]}>
             <planeGeometry args={[1, 1]} />
-            <primitive
-                object={new PhotoGradingMaterial()}
+            <shaderMaterial
                 ref={materialRef}
-                attach="material"
-                {...gradingUniforms}
+                vertexShader={VertexFragment}
+                fragmentShader={DitherFragment}
+                uniforms={uniforms}
+                glslVersion={THREE.GLSL3}
             />
         </mesh>
     );
 }
 
-export default function Scene({ imageSrc, settings }: SceneProps) {
+export default function Scene({ imageSrc, exportRef }: SceneProps) {
     return (
         <div style={{ width: "100%", height: "100%", position: "relative" }}>
             <Canvas
@@ -114,7 +122,9 @@ export default function Scene({ imageSrc, settings }: SceneProps) {
                 orthographic
                 camera={{ left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 0.1, far: 1000 }}
             >
-                <PostProcessingQuad imageSrc={imageSrc} settings={settings} />
+                <Suspense fallback={null}>
+                    <PostProcessing imageSrc={imageSrc} exportRef={exportRef} />
+                </Suspense>
             </Canvas>
         </div>
     );

@@ -8,10 +8,10 @@ import {
     type ChangeEvent,
     type DragEvent,
 } from "react";
-import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import Header from "../Header";
+import Scene from "./Scene";
 import styles from "./style.module.scss";
 
 gsap.registerPlugin(useGSAP);
@@ -45,6 +45,8 @@ export default function StudioManager() {
     const containerRef = useRef<HTMLDivElement>(null);
     const dropZoneRef = useRef<HTMLLabelElement>(null);
     const objectUrlRef = useRef<string | null>(null);
+
+    const canvasExportRef = useRef<(() => void) | null>(null);
 
     const processFile = useCallback((file: File | undefined) => {
         if (!file || !file.type.startsWith("image/")) return;
@@ -93,7 +95,7 @@ export default function StudioManager() {
     }, []);
 
     const handleExport = useCallback(() => {
-        alert("Exporting execution payload...");
+        canvasExportRef.current?.();
     }, []);
 
     const prefersReducedMotion =
@@ -289,7 +291,7 @@ export default function StudioManager() {
 
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
-                                    <label>THRESHOLD MATRIX</label>
+                                    <label>DOT GRID</label>
                                     <span className={styles.accentText}>
                                         {matrixSize} × {matrixSize}
                                     </span>
@@ -319,13 +321,9 @@ export default function StudioManager() {
 
                             <div className={styles.canvasContainer}>
                                 <div className={styles.previewFrame}>
-                                    <Image
-                                        src={imageSrc}
-                                        alt="Uploaded source image"
-                                        fill
-                                        unoptimized
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 90vw, 60vw"
-                                        className={styles.previewPlaceholder}
+                                    <Scene
+                                        imageSrc={imageSrc}
+                                        exportRef={canvasExportRef}
                                     />
                                 </div>
                             </div>
@@ -353,7 +351,6 @@ export default function StudioManager() {
                             </button>
                         ))}
                         <div className={styles.dockExportInfo}>
-                            <span>PNG / 4K / 16-BIT</span>
                             <strong>EXPORTED PAYLOAD</strong>
                         </div>
                     </nav>

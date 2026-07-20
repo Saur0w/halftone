@@ -22,25 +22,64 @@ const FILTERS = [
     { id: "ascii", label: "ASCII VECTOR", num: "03" },
     { id: "pixelate", label: "PIXELATE RETRO", num: "04" },
     { id: "pencil", label: "PENCIL SKETCH", num: "05" },
+    { id: "original", label: "ORIGINAL", num: "00" },
 ] as const;
 
 type FilterId = (typeof FILTERS)[number]["id"];
 type MatrixSize = "2" | "4" | "8" | "16";
+type ShapeType = "dot" | "line" | "cross";
 
 const MATRIX_SIZES: MatrixSize[] = ["2", "4", "8", "16"];
+const SHAPES: ShapeType[] = ["dot", "line", "cross"];
 
 const formatSigned = (value: number) =>
     `${value >= 0 ? "+" : "-"}${String(Math.abs(value)).padStart(2, "0")}`;
+
+interface FilterSettings {
+    brightness: number;
+    contrast: number;
+    dotScale: number;
+    matrixSize: MatrixSize;
+    angle: number;
+    shape: ShapeType;
+    jitter: number;
+}
+
+const DEFAULT_SETTINGS: Record<FilterId, FilterSettings> = {
+    halftone: { brightness: 10, contrast: 1.1, dotScale: 8, matrixSize: "8", angle: 45, shape: "dot", jitter: 0 },
+    dither: { brightness: 8, contrast: 1.24, dotScale: 6, matrixSize: "8", angle: 0, shape: "dot", jitter: 0 },
+    ascii: { brightness: 5, contrast: 1.5, dotScale: 4, matrixSize: "8", angle: 0, shape: "dot", jitter: 0.1 },
+    pixelate: { brightness: 0, contrast: 1.0, dotScale: 10, matrixSize: "4", angle: 0, shape: "dot", jitter: 0 },
+    pencil: { brightness: 15, contrast: 1.3, dotScale: 5, matrixSize: "4", angle: -45, shape: "line", jitter: 0.2 },
+    original: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0 },
+};
 
 export default function StudioManager() {
     const [imageSrc, setImageSrc] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<FilterId>("halftone");
     const [isDragging, setIsDragging] = useState(false);
+    const [showOriginal, setShowOriginal] = useState(false);
 
-    const [brightness, setBrightness] = useState(8);
-    const [contrast, setContrast] = useState(1.24);
-    const [dotScale, setDotScale] = useState(6);
-    const [matrixSize, setMatrixSize] = useState<MatrixSize>("8");
+    const [settings, setSettings] = useState<Record<FilterId, FilterSettings>>(DEFAULT_SETTINGS);
+
+    const currentSettings = settings[activeFilter];
+
+    const updateSetting = useCallback(<K extends keyof FilterSettings>(key: K, value: FilterSettings[K]) => {
+        setSettings(prev => ({
+            ...prev,
+            [activeFilter]: {
+                ...prev[activeFilter],
+                [key]: value
+            }
+        }));
+    }, [activeFilter]);
+
+    const handleReset = useCallback(() => {
+        setSettings(prev => ({
+            ...prev,
+            [activeFilter]: { ...DEFAULT_SETTINGS[activeFilter] }
+        }));
+    }, [activeFilter]);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const dropZoneRef = useRef<HTMLLabelElement>(null);
@@ -229,12 +268,7 @@ export default function StudioManager() {
                                 <h3>ADJUSTMENTS</h3>
                                 <button
                                     className={styles.resetBtn}
-                                    onClick={() => {
-                                        setBrightness(8);
-                                        setContrast(1.24);
-                                        setDotScale(6);
-                                        setMatrixSize("8");
-                                    }}
+                                    onClick={handleReset}
                                 >
                                     RESET
                                 </button>
@@ -243,15 +277,15 @@ export default function StudioManager() {
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
                                     <label htmlFor="brightness">BRIGHTNESS</label>
-                                    <span>{formatSigned(brightness)}</span>
+                                    <span>{formatSigned(currentSettings.brightness)}</span>
                                 </div>
                                 <input
                                     id="brightness"
                                     type="range"
                                     min="-100"
                                     max="100"
-                                    value={brightness}
-                                    onChange={(e) => setBrightness(Number(e.target.value))}
+                                    value={currentSettings.brightness}
+                                    onChange={(e) => updateSetting("brightness", Number(e.target.value))}
                                     className={styles.slider}
                                 />
                             </div>
@@ -259,7 +293,7 @@ export default function StudioManager() {
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
                                     <label htmlFor="contrast">CONTRAST</label>
-                                    <span>{contrast.toFixed(2)}</span>
+                                    <span>{currentSettings.contrast.toFixed(2)}</span>
                                 </div>
                                 <input
                                     id="contrast"
@@ -267,50 +301,116 @@ export default function StudioManager() {
                                     min="0"
                                     max="3"
                                     step="0.01"
-                                    value={contrast}
-                                    onChange={(e) => setContrast(Number(e.target.value))}
+                                    value={currentSettings.contrast}
+                                    onChange={(e) => updateSetting("contrast", Number(e.target.value))}
                                     className={styles.slider}
                                 />
                             </div>
 
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
-                                    <label htmlFor="dotScale">DOT SCALE</label>
-                                    <span>{dotScale.toFixed(1)} PX</span>
+                                    <label htmlFor="dotScale">
+                                        {activeFilter === "ascii" ? "CHARACTER SIZE" : activeFilter === "pixelate" ? "PIXEL SIZE" : "DOT SCALE"}
+                                    </label>
+                                    <span>{currentSettings.dotScale.toFixed(1)} PX</span>
                                 </div>
                                 <input
                                     id="dotScale"
                                     type="range"
                                     min="1"
                                     max="50"
-                                    value={dotScale}
-                                    onChange={(e) => setDotScale(Number(e.target.value))}
+                                    value={currentSettings.dotScale}
+                                    onChange={(e) => updateSetting("dotScale", Number(e.target.value))}
                                     className={styles.slider}
                                 />
                             </div>
 
-                            <div className={styles.controlGroup}>
-                                <div className={styles.controlLabelRow}>
-                                    <label>DOT GRID</label>
-                                    <span className={styles.accentText}>
-                                        {matrixSize} × {matrixSize}
-                                    </span>
+                            {activeFilter === "halftone" || activeFilter === "pencil" ? (
+                                <>
+                                    <div className={styles.controlGroup}>
+                                        <div className={styles.controlLabelRow}>
+                                            <label htmlFor="angle">PATTERN ANGLE</label>
+                                            <span>{currentSettings.angle.toFixed(0)}°</span>
+                                        </div>
+                                        <input
+                                            id="angle"
+                                            type="range"
+                                            min="-180"
+                                            max="180"
+                                            value={currentSettings.angle}
+                                            onChange={(e) => updateSetting("angle", Number(e.target.value))}
+                                            className={styles.slider}
+                                        />
+                                    </div>
+
+                                    <div className={styles.controlGroup}>
+                                        <div className={styles.controlLabelRow}>
+                                            <label>DOT SHAPE</label>
+                                            <span className={styles.accentText}>
+                                                {currentSettings.shape.toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className={styles.matrixSelectorGrid}>
+                                            {SHAPES.map((shapeType) => (
+                                                <button
+                                                    key={shapeType}
+                                                    onClick={() => updateSetting("shape", shapeType)}
+                                                    aria-pressed={currentSettings.shape === shapeType}
+                                                    className={`${styles.matrixBtn} ${
+                                                        currentSettings.shape === shapeType ? styles.activeMatrix : ""
+                                                    }`}
+                                                >
+                                                    {shapeType.toUpperCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : null}
+
+                            {activeFilter !== "original" && (
+                                <div className={styles.controlGroup}>
+                                    <div className={styles.controlLabelRow}>
+                                        <label htmlFor="jitter">JITTER</label>
+                                        <span>{currentSettings.jitter.toFixed(2)}</span>
+                                    </div>
+                                    <input
+                                        id="jitter"
+                                        type="range"
+                                        min="0"
+                                        max="1"
+                                        step="0.01"
+                                        value={currentSettings.jitter}
+                                        onChange={(e) => updateSetting("jitter", Number(e.target.value))}
+                                        className={styles.slider}
+                                    />
                                 </div>
-                                <div className={styles.matrixSelectorGrid}>
-                                    {MATRIX_SIZES.map((size) => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setMatrixSize(size)}
-                                            aria-pressed={matrixSize === size}
-                                            className={`${styles.matrixBtn} ${
-                                                matrixSize === size ? styles.activeMatrix : ""
-                                            }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
+                            )}
+
+                            {activeFilter === "dither" && (
+                                <div className={styles.controlGroup}>
+                                    <div className={styles.controlLabelRow}>
+                                        <label>DOT GRID</label>
+                                        <span className={styles.accentText}>
+                                            {currentSettings.matrixSize} × {currentSettings.matrixSize}
+                                        </span>
+                                    </div>
+                                    <div className={styles.matrixSelectorGrid}>
+                                        {MATRIX_SIZES.map((size) => (
+                                            <button
+                                                key={size}
+                                                onClick={() => updateSetting("matrixSize", size)}
+                                                aria-pressed={currentSettings.matrixSize === size}
+                                                className={`${styles.matrixBtn} ${
+                                                    currentSettings.matrixSize === size ? styles.activeMatrix : ""
+                                                }`}
+                                            >
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </aside>
 
                         <section className={styles.viewportArea}>
@@ -319,11 +419,24 @@ export default function StudioManager() {
                                 <span className={styles.viewportScale}>FIT / 72% / 1:1</span>
                             </div>
 
-                            <div className={styles.canvasContainer}>
+                            <div 
+                                className={styles.canvasContainer}
+                                onPointerDown={() => setShowOriginal(true)}
+                                onPointerUp={() => setShowOriginal(false)}
+                                onPointerLeave={() => setShowOriginal(false)}
+                            >
                                 <div className={styles.previewFrame}>
                                     <Scene
                                         imageSrc={imageSrc}
                                         exportRef={canvasExportRef}
+                                        brightness={currentSettings.brightness}
+                                        contrast={currentSettings.contrast}
+                                        dotScale={currentSettings.dotScale}
+                                        matrixSize={parseInt(currentSettings.matrixSize, 10)}
+                                        angle={currentSettings.angle}
+                                        shape={currentSettings.shape}
+                                        jitter={currentSettings.jitter}
+                                        activeFilter={showOriginal ? "original" : activeFilter}
                                     />
                                 </div>
                             </div>

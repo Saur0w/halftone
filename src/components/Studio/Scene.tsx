@@ -5,14 +5,25 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useTexture } from "@react-three/drei";
 import { DitherFragment } from "@/lib/Shaders/ditherShader";
+import { AsciiFragment } from "@/lib/Shaders/asciiShader";
+import { OriginalFragment } from "@/lib/Shaders/originalShader";
+import { HalftoneFragment } from "@/lib/Shaders/halftoneShader";
 import { VertexFragment } from "@/lib/Shaders/geoShader";
 
 interface SceneProps {
     imageSrc: string;
     exportRef?: RefObject<(() => void) | null>;
+    brightness?: number;
+    contrast?: number;
+    dotScale?: number;
+    matrixSize?: number;
+    activeFilter?: string;
+    angle?: number;
+    shape?: string;
+    jitter?: number;
 }
 
-function PostProcessing({ imageSrc, exportRef }: SceneProps) {
+function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, dotScale = 6, matrixSize = 8, angle = 0, shape = "dot", jitter = 0, activeFilter = "dither" }: SceneProps) {
     const materialRef = useRef<THREE.ShaderMaterial>(null);
     const meshRef = useRef<THREE.Mesh>(null);
     const { size, gl, scene, camera } = useThree();
@@ -31,8 +42,15 @@ function PostProcessing({ imageSrc, exportRef }: SceneProps) {
     const uniforms = useMemo(() => ({
         u_texture: { value: texture },
         u_resolution: { value: new THREE.Vector2(size.width, size.height) },
-        u_time: { value: 0 }
-    }), [texture, size.width, size.height]);
+        u_time: { value: 0 },
+        u_brightness: { value: brightness },
+        u_contrast: { value: contrast },
+        u_dotScale: { value: dotScale },
+        u_matrixSize: { value: matrixSize },
+        u_angle: { value: angle },
+        u_shape: { value: shape === "dot" ? 0 : shape === "line" ? 1 : 2 },
+        u_jitter: { value: jitter }
+    }), [texture, size.width, size.height, brightness, contrast, dotScale, matrixSize, angle, shape, jitter]);
 
     useFrame((state) => {
         if (materialRef.current?.uniforms.u_time) {
@@ -102,9 +120,15 @@ function PostProcessing({ imageSrc, exportRef }: SceneProps) {
         <mesh ref={meshRef} scale={[scaleX, scaleY, 1]}>
             <planeGeometry args={[1, 1]} />
             <shaderMaterial
+                key={activeFilter}
                 ref={materialRef}
                 vertexShader={VertexFragment}
-                fragmentShader={DitherFragment}
+                fragmentShader={
+                    activeFilter === "halftone" ? HalftoneFragment
+                    : activeFilter === "ascii" ? AsciiFragment 
+                    : activeFilter === "original" ? OriginalFragment 
+                    : DitherFragment
+                }
                 uniforms={uniforms}
                 glslVersion={THREE.GLSL3}
             />
@@ -112,7 +136,7 @@ function PostProcessing({ imageSrc, exportRef }: SceneProps) {
     );
 }
 
-export default function Scene({ imageSrc, exportRef }: SceneProps) {
+export default function Scene({ imageSrc, exportRef, brightness, contrast, dotScale, matrixSize, angle, shape, jitter, activeFilter }: SceneProps) {
     return (
         <div style={{ width: "100%", height: "100%", position: "relative" }}>
             <Canvas
@@ -125,7 +149,18 @@ export default function Scene({ imageSrc, exportRef }: SceneProps) {
                 camera={{ left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 0.1, far: 1000 }}
             >
                 <Suspense fallback={null}>
-                    <PostProcessing imageSrc={imageSrc} exportRef={exportRef} />
+                    <PostProcessing 
+                        imageSrc={imageSrc} 
+                        exportRef={exportRef}
+                        brightness={brightness}
+                        contrast={contrast}
+                        dotScale={dotScale}
+                        matrixSize={matrixSize}
+                        angle={angle}
+                        shape={shape}
+                        jitter={jitter}
+                        activeFilter={activeFilter}
+                    />
                 </Suspense>
             </Canvas>
         </div>

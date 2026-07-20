@@ -43,17 +43,18 @@ interface FilterSettings {
     angle: number;
     shape: ShapeType;
     jitter: number;
-    dotColor: string;
-    bgColor: string;
+    inkColor: string;
+    canvasColor: string;
+    invertPalette: boolean;
 }
 
 const DEFAULT_SETTINGS: Record<FilterId, FilterSettings> = {
-    halftone: { brightness: 10, contrast: 1.1, dotScale: 8, matrixSize: "8", angle: 45, shape: "dot", jitter: 0, dotColor: "#000000", bgColor: "#ffffff" },
-    dither: { brightness: 8, contrast: 1.24, dotScale: 6, matrixSize: "8", angle: 0, shape: "dot", jitter: 0, dotColor: "#000000", bgColor: "#ffffff" },
-    ascii: { brightness: 5, contrast: 1.5, dotScale: 4, matrixSize: "8", angle: 0, shape: "dot", jitter: 0.1, dotColor: "#000000", bgColor: "#ffffff" },
-    pixelate: { brightness: 0, contrast: 1.0, dotScale: 10, matrixSize: "4", angle: 0, shape: "dot", jitter: 0, dotColor: "#000000", bgColor: "#ffffff" },
-    pencil: { brightness: 15, contrast: 1.3, dotScale: 5, matrixSize: "4", angle: -45, shape: "line", jitter: 0.2, dotColor: "#000000", bgColor: "#ffffff" },
-    original: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, dotColor: "#000000", bgColor: "#ffffff" },
+    halftone: { brightness: 10, contrast: 1.1, dotScale: 8, matrixSize: "8", angle: 45, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    dither: { brightness: 8, contrast: 1.24, dotScale: 6, matrixSize: "8", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    ascii: { brightness: 5, contrast: 1.5, dotScale: 4, matrixSize: "8", angle: 0, shape: "dot", jitter: 0.1, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    pixelate: { brightness: 0, contrast: 1.0, dotScale: 10, matrixSize: "4", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    pencil: { brightness: 15, contrast: 1.3, dotScale: 5, matrixSize: "4", angle: -45, shape: "line", jitter: 0.2, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    original: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
 };
 
 export default function StudioManager() {
@@ -374,30 +375,40 @@ export default function StudioManager() {
                                 <>
                                     <div className={styles.controlGroup}>
                                         <div className={styles.controlLabelRow}>
-                                            <label htmlFor="dotColor">PIGMENT (DARK AREAS)</label>
-                                            <span className={styles.accentText}>{currentSettings.dotColor.toUpperCase()}</span>
+                                            <label htmlFor="inkColor">INK COLOR</label>
+                                            <span className={styles.accentText}>{currentSettings.inkColor.toUpperCase()}</span>
                                         </div>
                                         <input
-                                            id="dotColor"
+                                            id="inkColor"
                                             type="color"
-                                            value={currentSettings.dotColor}
-                                            onChange={(e) => updateSetting("dotColor", e.target.value)}
+                                            value={currentSettings.inkColor}
+                                            onChange={(e) => updateSetting("inkColor", e.target.value)}
                                             style={{ width: "100%", height: "24px", cursor: "pointer", background: "transparent", border: "none" }}
                                         />
                                     </div>
                                     <div className={styles.controlGroup}>
                                         <div className={styles.controlLabelRow}>
-                                            <label htmlFor="bgColor">SURFACE (LIGHT AREAS)</label>
-                                            <span className={styles.accentText}>{currentSettings.bgColor.toUpperCase()}</span>
+                                            <label htmlFor="canvasColor">CANVAS COLOR</label>
+                                            <span className={styles.accentText}>{currentSettings.canvasColor.toUpperCase()}</span>
                                         </div>
                                         <input
-                                            id="bgColor"
+                                            id="canvasColor"
                                             type="color"
-                                            value={currentSettings.bgColor}
-                                            onChange={(e) => updateSetting("bgColor", e.target.value)}
+                                            value={currentSettings.canvasColor}
+                                            onChange={(e) => updateSetting("canvasColor", e.target.value)}
                                             style={{ width: "100%", height: "24px", cursor: "pointer", background: "transparent", border: "none" }}
                                         />
                                     </div>
+                                    
+                                    <button 
+                                        onClick={() => updateSetting("invertPalette", !currentSettings.invertPalette)}
+                                        style={{ width: "100%", padding: "10px", marginTop: "10px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", cursor: "pointer", textTransform: "uppercase", fontSize: "11px", letterSpacing: "1px", display: "flex", justifyContent: "space-between" }}
+                                    >
+                                        <span>🎛️ FLIP PALETTE</span>
+                                        <span style={{ color: currentSettings.invertPalette ? "#ff003c" : "#fff" }}>
+                                            {currentSettings.invertPalette ? "ON" : "OFF"}
+                                        </span>
+                                    </button>
                                     <div className={styles.controlGroup}>
                                         <div className={styles.controlLabelRow}>
                                             <label htmlFor="jitter">JITTER</label>
@@ -420,7 +431,7 @@ export default function StudioManager() {
                             {activeFilter === "dither" && (
                                 <div className={styles.controlGroup}>
                                     <div className={styles.controlLabelRow}>
-                                        <label>DOT GRID</label>
+                                        <label>GRAIN RESOLUTION</label>
                                         <span className={styles.accentText}>
                                             {currentSettings.matrixSize} × {currentSettings.matrixSize}
                                         </span>
@@ -466,8 +477,9 @@ export default function StudioManager() {
                                         angle={currentSettings.angle}
                                         shape={currentSettings.shape}
                                         jitter={currentSettings.jitter}
-                                        dotColor={currentSettings.dotColor}
-                                        bgColor={currentSettings.bgColor}
+                                        inkColor={currentSettings.inkColor}
+                                        canvasColor={currentSettings.canvasColor}
+                                        invertPalette={currentSettings.invertPalette}
                                         activeFilter={showOriginal ? "original" : activeFilter}
                                     />
                                 </div>

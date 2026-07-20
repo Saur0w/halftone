@@ -8,6 +8,7 @@ import { DitherFragment } from "@/lib/Shaders/ditherShader";
 import { AsciiFragment } from "@/lib/Shaders/asciiShader";
 import { OriginalFragment } from "@/lib/Shaders/originalShader";
 import { HalftoneFragment } from "@/lib/Shaders/halftoneShader";
+import { PencilFragment } from "@/lib/Shaders/pencilShader";
 import { VertexFragment } from "@/lib/Shaders/geoShader";
 
 interface SceneProps {
@@ -21,11 +22,12 @@ interface SceneProps {
     angle?: number;
     shape?: string;
     jitter?: number;
-    dotColor?: string;
-    bgColor?: string;
+    inkColor?: string;
+    canvasColor?: string;
+    invertPalette?: boolean;
 }
 
-function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, dotScale = 6, matrixSize = 8, angle = 0, shape = "dot", jitter = 0, dotColor = "#000000", bgColor = "#ffffff", activeFilter = "dither" }: SceneProps) {
+function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, dotScale = 6, matrixSize = 8, angle = 0, shape = "dot", jitter = 0, inkColor = "#000000", canvasColor = "#ffffff", invertPalette = false, activeFilter = "dither" }: SceneProps) {
     const materialRef = useRef<THREE.ShaderMaterial>(null);
     const meshRef = useRef<THREE.Mesh>(null);
     const { size, gl, scene, camera } = useThree();
@@ -52,9 +54,10 @@ function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, 
         u_angle: { value: angle },
         u_shape: { value: shape === "dot" ? 0 : shape === "line" ? 1 : 2 },
         u_jitter: { value: jitter },
-        u_dotColor: { value: new THREE.Color(dotColor) },
-        u_bgColor: { value: new THREE.Color(bgColor) }
-    }), [texture, size.width, size.height, brightness, contrast, dotScale, matrixSize, angle, shape, jitter, dotColor, bgColor]);
+        u_inkColor: { value: new THREE.Color(inkColor) },
+        u_canvasColor: { value: new THREE.Color(canvasColor) },
+        u_invertPalette: { value: invertPalette ? 1.0 : 0.0 }
+    }), [texture, size.width, size.height, brightness, contrast, dotScale, matrixSize, angle, shape, jitter, inkColor, canvasColor, invertPalette]);
 
     useFrame((state) => {
         if (materialRef.current?.uniforms.u_time) {
@@ -128,7 +131,8 @@ function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, 
                 ref={materialRef}
                 vertexShader={VertexFragment}
                 fragmentShader={
-                    activeFilter === "halftone" ? HalftoneFragment
+                    activeFilter === "pencil" ? PencilFragment
+                    : activeFilter === "halftone" ? HalftoneFragment
                     : activeFilter === "ascii" ? AsciiFragment 
                     : activeFilter === "original" ? OriginalFragment 
                     : DitherFragment
@@ -140,7 +144,7 @@ function PostProcessing({ imageSrc, exportRef, brightness = 8, contrast = 1.24, 
     );
 }
 
-export default function Scene({ imageSrc, exportRef, brightness, contrast, dotScale, matrixSize, angle, shape, jitter, dotColor, bgColor, activeFilter }: SceneProps) {
+export default function Scene({ imageSrc, exportRef, brightness, contrast, dotScale, matrixSize, angle, shape, jitter, inkColor, canvasColor, invertPalette, activeFilter }: SceneProps) {
     return (
         <div style={{ width: "100%", height: "100%", position: "relative" }}>
             <Canvas
@@ -163,8 +167,9 @@ export default function Scene({ imageSrc, exportRef, brightness, contrast, dotSc
                         angle={angle}
                         shape={shape}
                         jitter={jitter}
-                        dotColor={dotColor}
-                        bgColor={bgColor}
+                        inkColor={inkColor}
+                        canvasColor={canvasColor}
+                        invertPalette={invertPalette}
                         activeFilter={activeFilter}
                     />
                 </Suspense>

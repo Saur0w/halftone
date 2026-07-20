@@ -9,8 +9,9 @@ uniform float u_dotScale;
 uniform float u_angle;
 uniform float u_shape;
 uniform float u_jitter;
-uniform vec3 u_dotColor;
-uniform vec3 u_bgColor;
+uniform vec3 u_inkColor;
+uniform vec3 u_canvasColor;
+uniform float u_invertPalette;
 
 out vec4 fragColor;
 
@@ -81,7 +82,14 @@ void main() {
     
     float outputColor = smoothstep(radius - aa, radius + aa, d);
     
+    vec3 cInk = u_inkColor;
+    vec3 cPaper = u_canvasColor;
+    if (u_invertPalette > 0.5) {
+        cInk = u_canvasColor;
+        cPaper = u_inkColor;
+    }
+    
     // outputColor is 0 inside the shape (foreground) and 1 outside (background)
-    fragColor = vec4(mix(u_dotColor, u_bgColor, outputColor), 1.0);
+    fragColor = vec4(mix(cInk, cPaper, outputColor), 1.0);
 }
 `;

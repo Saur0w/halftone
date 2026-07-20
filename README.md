@@ -1,4 +1,4 @@
-# 🎛️ halftone
+# halftone
 
 A high-performance, client-side image processing studio that converts standard images into stunning retro, stylized aesthetics using modern web technologies. 
 
@@ -15,12 +15,12 @@ Built entirely with **Next.js**, **TypeScript**, and custom **GLSL Fragment Shad
     *   **Pixelate:** Low-res grid downsampling matching classic retro game console palettes (NES, Game Boy, Sega).
     *   **Pencil Sketch:** Edges drawn with high-contrast Sobel operator filtering.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 *   **Framework:** Next.js (App Router)
 *   **Language:** TypeScript
 *   **Graphics Engine:** WebGL2 / GLSL Shaders
-*   **Styling:** Tailwind CSS
+*   **Styling:** SCSS (Sassy CSS) / CSS Modules
 
 ## How it Works (Under the Hood)
 
@@ -30,6 +30,7 @@ Most web-based image editors rely on `canvas.getImageData()` to check and modify
 1.  The uploaded image is bound as a **WebGL 2D Texture** and uploaded to the GPU exactly once.
 2.  UI controls (sliders, drop-downs) pipe adjustments as lightweight **Uniform variables** directly into the graphics card pipeline.
 3.  Custom **Fragment Shaders** compute complex algorithmic math (Sobel convolution matrices, color space dithering) in parallel across thousands of GPU cores simultaneously.
+4.  The user interface wraps the WebGL context inside a modular architecture styled completely with custom, responsive **SCSS** styling.
 
 ## Getting Started
 

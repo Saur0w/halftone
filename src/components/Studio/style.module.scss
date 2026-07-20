@@ -6,8 +6,6 @@ $accent-neon: #C9FF33;
 $border-muted: rgba(255, 255, 255, 0.05);
 $text-bright: #F4F4F5;
 $text-dark: #71717A;
-
-// Breakpoints
 $bp-tablet: 1024px;
 $bp-mobile: 640px;
 
@@ -16,7 +14,7 @@ $bp-mobile: 640px;
   min-height: 100vh;
   width: 100%;
   color: $text-bright;
-  padding-top: 64px; // Clear structural header spacing
+  padding-top: 64px;
   box-sizing: border-box;
   overflow-x: hidden;
 
@@ -40,7 +38,6 @@ $bp-mobile: 640px;
   margin: 6px 0 0 0;
 }
 
-// ==================== STATE 01 STYLING ====================
 .ingestContainer {
   max-width: 1200px;
   margin: 80px auto 0 auto;
@@ -181,7 +178,6 @@ $bp-mobile: 640px;
   }
 }
 
-// ==================== STATE 02 STYLING ====================
 .workspaceContainer {
   padding: 24px;
   max-width: 1800px;
@@ -247,7 +243,6 @@ $bp-mobile: 640px;
     }
   }
 
-  // Sidebar Controls
   .controlSidebar {
     background: $panel-bg;
     border: 1px solid $border-muted;
@@ -377,6 +372,7 @@ $bp-mobile: 640px;
       }
     }
   }
+
   .viewportArea {
     border: 1px solid $border-muted;
     background: $panel-bg;

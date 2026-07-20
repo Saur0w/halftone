@@ -4,7 +4,7 @@ A high-performance, client-side image processing studio that converts standard i
 
 Built entirely with **Next.js**, **TypeScript**, and custom **GLSL Fragment Shaders**, `halftone` offloads heavy pixel manipulation from the CPU straight to the GPU via WebGL, enabling real-time, 60fps filter adjustments on massive image resolutions with zero server overhead.
 
-## Features
+## ✨ Features
 
 *   **100% Client-Side Processing:** No image files are ever uploaded to a backend server. Everything is handled via local Blob URLs and processed directly in the browser memory.
 *   **Blazing Fast GPU Shaders:** Tweak sliders for brightness, contrast, scale, and threshold patterns with instantaneous, sub-millisecond redraws.

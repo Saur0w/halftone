@@ -40,7 +40,8 @@ function PostProcessing({ imageSrc, exportRef }: SceneProps) {
         }
     });
 
-    const imageAspect = texture.image ? texture.image.width / texture.image.height : 1;
+    const image = texture.image as HTMLImageElement | undefined;
+    const imageAspect = image ? image.width / image.height : 1;
     const canvasAspect = size.width / size.height;
     
     let scaleX = 1;
@@ -58,8 +59,9 @@ function PostProcessing({ imageSrc, exportRef }: SceneProps) {
         exportRef.current = () => {
             if (!texture.image || !meshRef.current) return;
 
-            const naturalWidth = texture.image.naturalWidth || texture.image.width;
-            const naturalHeight = texture.image.naturalHeight || texture.image.height;
+            const image = texture.image as HTMLImageElement;
+            const naturalWidth = image.naturalWidth || image.width;
+            const naturalHeight = image.naturalHeight || image.height;
 
             const originalPixelRatio = gl.getPixelRatio();
             gl.setPixelRatio(1);

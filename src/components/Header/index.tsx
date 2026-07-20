@@ -11,11 +11,9 @@ export default function Header({ activeState = "01", onExport }: HeaderProps) {
     return (
         <header className={styles.header}>
             <div className={styles.body}>
-                {/* Left Side: Brand & Telemetry */}
                 <div className={styles.leftSection}>
                     <div className={styles.branding}>
                         <h1 className={styles.title}>halftone</h1>
-                        {/* Custom geometric engine icon to replace the nvidia logo */}
                         <svg
                             className={styles.engineIcon}
                             viewBox="0 0 24 24"
@@ -29,20 +27,9 @@ export default function Header({ activeState = "01", onExport }: HeaderProps) {
                             <rect x="3" y="14" width="7" height="7" rx="1" />
                         </svg>
                     </div>
-
-                    <div className={styles.divider}></div>
-
-                    <div className={styles.statusLabel}>
-                        <span className={styles.indicatorDot}></span>
-                        GPU ENGINE / ONLINE
-                    </div>
                 </div>
 
-                {/* Right Side: Navigation States & Action Items */}
                 <div className={styles.rightSection}>
-                    <div className={styles.stateBadge}>
-                        STATE / {activeState}
-                    </div>
 
                     <button
                         className={styles.exportBtn}

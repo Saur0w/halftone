@@ -159,7 +159,6 @@ export default function StudioManager() {
             {!imageSrc ? (
                 <main className={styles.ingestContainer}>
                     <div className={styles.ingestHeader}>
-                        <span className={styles.stageLabel}>STATE 01 / SOURCE INGEST</span>
                         <h2 className={styles.mainTitle}>Feed the shader.</h2>
                         <p className={styles.subtitle}>
                             Drop a source image to initialize the GPU processing pipeline.

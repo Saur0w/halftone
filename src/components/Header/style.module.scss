@@ -1,10 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Roboto+Mono:wght@400;500&display=swap');
 
-// Design Tokens
 $bg-color: #0B0C0E;
 $text-primary: #F4F4F5;
 $text-secondary: #71717A;
-$accent-neon: #C9FF33; // Signature tactical lime green
+$accent-neon: #C9FF33;
 $border-color: rgba(255, 255, 255, 0.08);
 
 .header {
@@ -59,12 +58,6 @@ $border-color: rgba(255, 255, 255, 0.08);
       }
     }
 
-    .divider {
-      width: 1px;
-      height: 20px;
-      background: $border-color;
-    }
-
     .statusLabel {
       display: flex;
       align-items: center;
@@ -87,7 +80,6 @@ $border-color: rgba(255, 255, 255, 0.08);
     }
   }
 
-  // --- Right Section Configurations ---
   .rightSection {
     display: flex;
     align-items: center;

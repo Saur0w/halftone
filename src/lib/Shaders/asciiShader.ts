@@ -7,6 +7,8 @@ uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_dotScale;
 uniform float u_jitter;
+uniform vec3 u_dotColor;
+uniform vec3 u_bgColor;
 
 out vec4 fragColor;
 
@@ -43,7 +45,8 @@ void main() {
     
     float luma = clamp(dot(color, vec3(0.299, 0.587, 0.114)), 0.0, 1.0);
     
-    int density = int(round(luma * 7.0));
+    // Invert luma so that dark areas (low luma) get high character density (ink)
+    int density = int(round((1.0 - luma) * 7.0));
     int bitmap = getCharBitmap(density);
     
     vec2 charUv = fract(v_texCoord * cells);
@@ -53,6 +56,7 @@ void main() {
     int bitIndex = y * 5 + x;
     float pixel = float((bitmap >> bitIndex) & 1);
     
-    fragColor = vec4(vec3(pixel), 1.0);
+    // pixel is 1.0 for the character (foreground) and 0.0 for empty space (background)
+    fragColor = vec4(mix(u_bgColor, u_dotColor, pixel), 1.0);
 }
 `;

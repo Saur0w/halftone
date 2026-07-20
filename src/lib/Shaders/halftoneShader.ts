@@ -9,6 +9,8 @@ uniform float u_dotScale;
 uniform float u_angle;
 uniform float u_shape;
 uniform float u_jitter;
+uniform vec3 u_dotColor;
+uniform vec3 u_bgColor;
 
 out vec4 fragColor;
 
@@ -79,7 +81,7 @@ void main() {
     
     float outputColor = smoothstep(radius - aa, radius + aa, d);
     
-    // We output black or white.
-    fragColor = vec4(vec3(outputColor), 1.0);
+    // outputColor is 0 inside the shape (foreground) and 1 outside (background)
+    fragColor = vec4(mix(u_dotColor, u_bgColor, outputColor), 1.0);
 }
 `;

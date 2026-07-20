@@ -8,6 +8,8 @@ uniform float u_contrast;
 uniform float u_dotScale;
 uniform float u_matrixSize;
 uniform float u_jitter;
+uniform vec3 u_dotColor;
+uniform vec3 u_bgColor;
 
 out vec4 fragColor;
 
@@ -57,6 +59,7 @@ void main() {
     // Compare luminance with the Bayer matrix threshold
     float dithered = luma > threshold ? 1.0 : 0.0;
     
-    fragColor = vec4(vec3(dithered), 1.0);
+    // dithered is 1.0 for background (light) and 0.0 for foreground (dark)
+    fragColor = vec4(mix(u_dotColor, u_bgColor, dithered), 1.0);
 }
 `;

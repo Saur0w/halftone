@@ -1,4 +1,6 @@
-export const OriginalFragment = `precision highp float;
+import { withLightroom } from "./lightroomHelper";
+
+export const OriginalFragment = withLightroom(`precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -14,4 +16,4 @@ void main() {
     // User requested "Original", like Lightroom, it usually has no adjustments.
     fragColor = texColor;
 }
-`;
+`);

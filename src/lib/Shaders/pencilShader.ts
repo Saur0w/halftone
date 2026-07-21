@@ -1,4 +1,6 @@
-export const PencilFragment = `precision highp float;
+import { withLightroom } from "./lightroomHelper";
+
+export const PencilFragment = withLightroom(`precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -128,4 +130,4 @@ void main() {
 
     fragColor = vec4(finalColor, 1.0);
 }
-`;
+`);

@@ -12,17 +12,33 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import Header from "../Header";
 import Scene from "./Scene";
+import Accordion from "./Accordion";
+import AdjustmentSlider from "./AdjustmentSlider";
+import ToneCurve from "./ToneCurve";
+import ColorGrading from "./ColorGrading";
+import {
+    CROP_RATIOS,
+    DEFAULT_LIGHTROOM,
+    type CropRatio,
+    type GradeColorId,
+    type LightroomAdjustments,
+} from "@/lib/Shaders/lightroomHelper";
 import styles from "./style.module.scss";
 
 gsap.registerPlugin(useGSAP);
 
 const FILTERS = [
+    { id: "original", label: "ORIGINAL", num: "00" },
     { id: "halftone", label: "HALFTONE PRINT", num: "01" },
     { id: "dither", label: "DITHER MODE", num: "02" },
     { id: "ascii", label: "ASCII VECTOR", num: "03" },
     { id: "pixelate", label: "PIXELATE RETRO", num: "04" },
     { id: "pencil", label: "PENCIL SKETCH", num: "05" },
-    { id: "original", label: "ORIGINAL", num: "00" },
+    { id: "monochrome", label: "MONO MATRIX", num: "06" },
+    { id: "thermal", label: "THERMAL INFRARED", num: "07" },
+    { id: "radiation", label: "CHERENKOV RAD", num: "08" },
+    { id: "nightvision", label: "PHOSPHOR NVG", num: "09" },
+    { id: "topographic", label: "TOPO ISOLINE", num: "10" },
 ] as const;
 
 type FilterId = (typeof FILTERS)[number]["id"];
@@ -49,12 +65,17 @@ interface FilterSettings {
 }
 
 const DEFAULT_SETTINGS: Record<FilterId, FilterSettings> = {
-    halftone: { brightness: 10, contrast: 1.1, dotScale: 8, matrixSize: "8", angle: 45, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    halftone: { brightness: 10, contrast: 1.1, dotScale: 8, matrixSize: "8", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
     dither: { brightness: 8, contrast: 1.24, dotScale: 6, matrixSize: "8", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
     ascii: { brightness: 5, contrast: 1.5, dotScale: 4, matrixSize: "8", angle: 0, shape: "dot", jitter: 0.1, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
     pixelate: { brightness: 0, contrast: 1.0, dotScale: 10, matrixSize: "4", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
-    pencil: { brightness: 15, contrast: 1.3, dotScale: 5, matrixSize: "4", angle: -45, shape: "line", jitter: 0.2, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    pencil: { brightness: 15, contrast: 1.3, dotScale: 5, matrixSize: "4", angle: 0, shape: "line", jitter: 0.2, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
     original: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    monochrome: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    thermal: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    radiation: { brightness: 0, contrast: 1.0, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    nightvision: { brightness: 10, contrast: 1.2, dotScale: 1, matrixSize: "2", angle: 0, shape: "dot", jitter: 0.05, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
+    topographic: { brightness: 0, contrast: 1.0, dotScale: 15, matrixSize: "2", angle: 0, shape: "dot", jitter: 0, inkColor: "#000000", canvasColor: "#ffffff", invertPalette: false },
 };
 
 export default function StudioManager() {
@@ -64,6 +85,10 @@ export default function StudioManager() {
     const [showOriginal, setShowOriginal] = useState(false);
 
     const [settings, setSettings] = useState<Record<FilterId, FilterSettings>>(DEFAULT_SETTINGS);
+    const [lightroom, setLightroom] = useState<LightroomAdjustments>(DEFAULT_LIGHTROOM);
+    const [openPanels, setOpenPanels] = useState<Set<string>>(
+        () => new Set(["shader", "light", "color"])
+    );
 
     const currentSettings = settings[activeFilter];
 
@@ -280,7 +305,12 @@ export default function StudioManager() {
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
                                     <label htmlFor="brightness">BRIGHTNESS</label>
-                                    <span>{formatSigned(currentSettings.brightness)}</span>
+                                    <input
+                                        type="number"
+                                        value={currentSettings.brightness}
+                                        onChange={(e) => updateSetting("brightness", Number(e.target.value))}
+                                        className={styles.numberInput}
+                                    />
                                 </div>
                                 <input
                                     id="brightness"
@@ -296,7 +326,13 @@ export default function StudioManager() {
                             <div className={styles.controlGroup}>
                                 <div className={styles.controlLabelRow}>
                                     <label htmlFor="contrast">CONTRAST</label>
-                                    <span>{currentSettings.contrast.toFixed(2)}</span>
+                                    <input
+                                        type="number"
+                                        value={currentSettings.contrast}
+                                        step="0.01"
+                                        onChange={(e) => updateSetting("contrast", Number(e.target.value))}
+                                        className={styles.numberInput}
+                                    />
                                 </div>
                                 <input
                                     id="contrast"
@@ -315,7 +351,16 @@ export default function StudioManager() {
                                     <label htmlFor="dotScale">
                                         {activeFilter === "ascii" ? "CHARACTER SIZE" : activeFilter === "pixelate" ? "PIXEL SIZE" : "DOT SCALE"}
                                     </label>
-                                    <span>{currentSettings.dotScale.toFixed(1)} PX</span>
+                                    <div className={styles.inputGroup}>
+                                        <input
+                                            type="number"
+                                            value={currentSettings.dotScale}
+                                            step="0.1"
+                                            onChange={(e) => updateSetting("dotScale", Number(e.target.value))}
+                                            className={styles.numberInput}
+                                        />
+                                        <span>PX</span>
+                                    </div>
                                 </div>
                                 <input
                                     id="dotScale"
@@ -333,7 +378,15 @@ export default function StudioManager() {
                                     <div className={styles.controlGroup}>
                                         <div className={styles.controlLabelRow}>
                                             <label htmlFor="angle">PATTERN ANGLE</label>
-                                            <span>{currentSettings.angle.toFixed(0)}°</span>
+                                            <div className={styles.inputGroup}>
+                                                <input
+                                                    type="number"
+                                                    value={currentSettings.angle}
+                                                    onChange={(e) => updateSetting("angle", Number(e.target.value))}
+                                                    className={styles.numberInput}
+                                                />
+                                                <span>°</span>
+                                            </div>
                                         </div>
                                         <input
                                             id="angle"
@@ -412,7 +465,13 @@ export default function StudioManager() {
                                     <div className={styles.controlGroup}>
                                         <div className={styles.controlLabelRow}>
                                             <label htmlFor="jitter">JITTER</label>
-                                            <span>{currentSettings.jitter.toFixed(2)}</span>
+                                            <input
+                                                type="number"
+                                                value={currentSettings.jitter}
+                                                step="0.01"
+                                                onChange={(e) => updateSetting("jitter", Number(e.target.value))}
+                                                className={styles.numberInput}
+                                            />
                                         </div>
                                         <input
                                             id="jitter"

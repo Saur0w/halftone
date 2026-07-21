@@ -301,6 +301,39 @@ $bp-mobile: 640px;
           color: $text-bright;
         }
 
+        .inputGroup {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          span {
+            color: $text-dark;
+          }
+        }
+
+        .numberInput {
+          background: transparent;
+          border: none;
+          color: $text-bright;
+          font-family: "Roboto Mono", monospace;
+          font-size: 11px;
+          text-align: right;
+          width: 48px;
+          -moz-appearance: textfield;
+
+          &::-webkit-outer-spin-button,
+          &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+
+          &:focus {
+            outline: 1px solid $accent-neon;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.05);
+          }
+        }
+
         .accentText {
           color: $accent-neon;
         }
@@ -566,3 +599,4 @@ $bp-mobile: 640px;
     }
   }
 }
+

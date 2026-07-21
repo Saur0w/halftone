@@ -16,6 +16,76 @@ import styles from "./style.module.scss";
 
 gsap.registerPlugin(useGSAP);
 
+interface ColorPickerProps {
+    label: string;
+    value: string;
+    onChange: (val: string) => void;
+    styles: {
+        readonly [key: string]: string;
+    };
+}
+
+function ColorPickerInput({ label, value, onChange, styles }: ColorPickerProps) {
+    const [tempValue, setTempValue] = useState(value);
+
+    useEffect(() => {
+        setTempValue(value);
+    }, [value]);
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value.toUpperCase();
+        
+        // Auto-add '#' if not present and typing hex chars
+        if (val && !val.startsWith('#')) {
+            val = '#' + val;
+        }
+
+        // Restrict to max 7 characters
+        if (val.length > 7) {
+            val = val.slice(0, 7);
+        }
+
+        setTempValue(val);
+
+        // Validate hex color format (#FFF or #FFFFFF)
+        const hexRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
+        if (hexRegex.test(val)) {
+            onChange(val);
+        }
+    };
+
+    const handleBlur = () => {
+        setTempValue(value);
+    };
+
+    return (
+        <div className={styles.controlGroup}>
+            <div className={styles.controlLabelRow}>
+                <label htmlFor={label.replace(/\s+/g, '-').toLowerCase()}>{label}</label>
+                <input
+                    type="text"
+                    value={tempValue}
+                    onChange={handleTextChange}
+                    onBlur={handleBlur}
+                    className={styles.hexInput}
+                    placeholder="#000000"
+                />
+            </div>
+            <input
+                id={label.replace(/\s+/g, '-').toLowerCase()}
+                type="color"
+                value={value}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    setTempValue(val);
+                    onChange(val);
+                }}
+                style={{ width: "100%", height: "24px", cursor: "pointer", background: "transparent", border: "none" }}
+            />
+        </div>
+    );
+}
+
 const FILTERS = [
     { id: "original", label: "ORIGINAL", num: "00" },
     { id: "halftone", label: "HALFTONE PRINT", num: "01" },
@@ -97,17 +167,93 @@ export default function StudioManager() {
     const containerRef = useRef<HTMLDivElement>(null);
     const dropZoneRef = useRef<HTMLLabelElement>(null);
     const objectUrlRef = useRef<string | null>(null);
+    const uploadCounterRef = useRef(0);
 
     const canvasExportRef = useRef<(() => void) | null>(null);
 
     const processFile = useCallback((file: File | undefined) => {
         if (!file || !file.type.startsWith("image/")) return;
 
-        if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+        const maxFileSize = 100 * 1024 * 1024; // 100 MB
+        if (file.size > maxFileSize) {
+            alert("File is too large. Please upload an image smaller than 100 MB.");
+            return;
+        }
+
+        const uploadId = ++uploadCounterRef.current;
+
+        if (objectUrlRef.current) {
+            URL.revokeObjectURL(objectUrlRef.current);
+            objectUrlRef.current = null;
+        }
 
         const url = URL.createObjectURL(file);
-        objectUrlRef.current = url;
-        setImageSrc(url);
+
+        // Load the image to check dimensions and downscale if it exceeds WebGL safe resolution limits (8192px max dimension)
+        const img = new Image();
+        img.onload = () => {
+            if (uploadId !== uploadCounterRef.current) {
+                URL.revokeObjectURL(url);
+                return;
+            }
+
+            const maxDimension = 8192;
+            if (img.width > maxDimension || img.height > maxDimension) {
+                // Calculate new dimensions
+                let newWidth = img.width;
+                let newHeight = img.height;
+                if (img.width > img.height) {
+                    newHeight = Math.round((img.height * maxDimension) / img.width);
+                    newWidth = maxDimension;
+                } else {
+                    newWidth = Math.round((img.width * maxDimension) / img.height);
+                    newHeight = maxDimension;
+                }
+
+                // Create a canvas to downscale
+                const canvas = document.createElement("canvas");
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                    canvas.toBlob((blob) => {
+                        if (uploadId !== uploadCounterRef.current) {
+                            return;
+                        }
+                        if (blob) {
+                            // Revoke initial URL and create new one for downscaled blob
+                            URL.revokeObjectURL(url);
+                            const downscaledUrl = URL.createObjectURL(blob);
+                            objectUrlRef.current = downscaledUrl;
+                            setImageSrc(downscaledUrl);
+                        } else {
+                            // Fallback if blob creation fails
+                            objectUrlRef.current = url;
+                            setImageSrc(url);
+                        }
+                    }, file.type);
+                } else {
+                    // Fallback if context is not available
+                    objectUrlRef.current = url;
+                    setImageSrc(url);
+                }
+            } else {
+                // Image is within safe dimensions, use original url
+                objectUrlRef.current = url;
+                setImageSrc(url);
+            }
+        };
+        img.onerror = () => {
+            if (uploadId !== uploadCounterRef.current) {
+                URL.revokeObjectURL(url);
+                return;
+            }
+            // Fallback in case of loading error
+            objectUrlRef.current = url;
+            setImageSrc(url);
+        };
+        img.src = url;
     }, []);
 
     useEffect(() => {
@@ -242,7 +388,7 @@ export default function StudioManager() {
                                 </svg>
                             </div>
                             <span className={styles.actionText}>DROP IMAGE / CLICK TO BROWSE</span>
-                            <span className={styles.metaText}>PNG - JPG - WEBP - TIFF / MAX 128 MP</span>
+                            <span className={styles.metaText}>PNG - JPG - WEBP - TIFF / MAX 100 MB</span>
                         </div>
                     </label>
 
@@ -411,32 +557,18 @@ export default function StudioManager() {
 
                             {activeFilter !== "original" && (
                                 <>
-                                    <div className={styles.controlGroup}>
-                                        <div className={styles.controlLabelRow}>
-                                            <label htmlFor="inkColor">INK COLOR</label>
-                                            <span className={styles.accentText}>{currentSettings.inkColor.toUpperCase()}</span>
-                                        </div>
-                                        <input
-                                            id="inkColor"
-                                            type="color"
-                                            value={currentSettings.inkColor}
-                                            onChange={(e) => updateSetting("inkColor", e.target.value)}
-                                            style={{ width: "100%", height: "24px", cursor: "pointer", background: "transparent", border: "none" }}
-                                        />
-                                    </div>
-                                    <div className={styles.controlGroup}>
-                                        <div className={styles.controlLabelRow}>
-                                            <label htmlFor="canvasColor">CANVAS COLOR</label>
-                                            <span className={styles.accentText}>{currentSettings.canvasColor.toUpperCase()}</span>
-                                        </div>
-                                        <input
-                                            id="canvasColor"
-                                            type="color"
-                                            value={currentSettings.canvasColor}
-                                            onChange={(e) => updateSetting("canvasColor", e.target.value)}
-                                            style={{ width: "100%", height: "24px", cursor: "pointer", background: "transparent", border: "none" }}
-                                        />
-                                    </div>
+                                    <ColorPickerInput
+                                        label="INK COLOR"
+                                        value={currentSettings.inkColor}
+                                        onChange={(val) => updateSetting("inkColor", val)}
+                                        styles={styles}
+                                    />
+                                    <ColorPickerInput
+                                        label="CANVAS COLOR"
+                                        value={currentSettings.canvasColor}
+                                        onChange={(val) => updateSetting("canvasColor", val)}
+                                        styles={styles}
+                                    />
                                     
                                     <button 
                                         onClick={() => updateSetting("invertPalette", !currentSettings.invertPalette)}

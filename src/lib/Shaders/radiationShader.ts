@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const RadiationFragment = withLightroom(`precision highp float;
+export const RadiationFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -36,4 +34,4 @@ void main() {
     
     fragColor = vec4(radiationColor, 1.0);
 }
-`);
+`;

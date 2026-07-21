@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const MonochromeFragment = withLightroom(`precision highp float;
+export const MonochromeFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -41,4 +39,4 @@ void main() {
     
     fragColor = vec4(mix(cInk, cPaper, luma), 1.0);
 }
-`);
+`;

@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const DitherFragment = withLightroom(`precision highp float;
+export const DitherFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -72,4 +70,4 @@ void main() {
     // dithered is 1.0 for background (light) and 0.0 for foreground (dark)
     fragColor = vec4(mix(cInk, cPaper, dithered), 1.0);
 }
-`);
+`;

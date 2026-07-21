@@ -12,17 +12,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import Header from "../Header";
 import Scene from "./Scene";
-import Accordion from "./Accordion";
-import AdjustmentSlider from "./AdjustmentSlider";
-import ToneCurve from "./ToneCurve";
-import ColorGrading from "./ColorGrading";
-import {
-    CROP_RATIOS,
-    DEFAULT_LIGHTROOM,
-    type CropRatio,
-    type GradeColorId,
-    type LightroomAdjustments,
-} from "@/lib/Shaders/lightroomHelper";
 import styles from "./style.module.scss";
 
 gsap.registerPlugin(useGSAP);
@@ -85,10 +74,6 @@ export default function StudioManager() {
     const [showOriginal, setShowOriginal] = useState(false);
 
     const [settings, setSettings] = useState<Record<FilterId, FilterSettings>>(DEFAULT_SETTINGS);
-    const [lightroom, setLightroom] = useState<LightroomAdjustments>(DEFAULT_LIGHTROOM);
-    const [openPanels, setOpenPanels] = useState<Set<string>>(
-        () => new Set(["shader", "light", "color"])
-    );
 
     const currentSettings = settings[activeFilter];
 

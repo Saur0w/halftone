@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const ThermalFragment = withLightroom(`precision highp float;
+export const ThermalFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -39,4 +37,4 @@ void main() {
     
     fragColor = vec4(thermalPalette(luma), 1.0);
 }
-`);
+`;

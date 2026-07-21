@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const TopographicFragment = withLightroom(`precision highp float;
+export const TopographicFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -48,4 +46,4 @@ void main() {
     
     fragColor = vec4(mix(cPaper, cInk, contour), 1.0);
 }
-`);
+`;

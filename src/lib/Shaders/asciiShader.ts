@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const AsciiFragment = withLightroom(`precision highp float;
+export const AsciiFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -69,4 +67,4 @@ void main() {
     // pixel is 1.0 for the character (foreground) and 0.0 for empty space (background)
     fragColor = vec4(mix(cPaper, cInk, pixel), 1.0);
 }
-`);
+`;

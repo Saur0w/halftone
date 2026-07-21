@@ -1,6 +1,4 @@
-import { withLightroom } from "./lightroomHelper";
-
-export const HalftoneFragment = withLightroom(`precision highp float;
+export const HalftoneFragment = `precision highp float;
 
 in vec2 v_texCoord;
 uniform sampler2D u_texture;
@@ -94,4 +92,4 @@ void main() {
     // outputColor is 0 inside the shape (foreground) and 1 outside (background)
     fragColor = vec4(mix(cInk, cPaper, outputColor), 1.0);
 }
-`);
+`;

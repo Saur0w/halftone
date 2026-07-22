@@ -1,0 +1,207 @@
+$bg-black: #07080a;
+$panel-bg: #0b0c0e;
+$accent-neon: #C9FF33;
+$border-muted: rgba(255, 255, 255, 0.08);
+$text-bright: #F4F4F5;
+$text-dark: #71717A;
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(7, 8, 10, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalCard {
+  background: $panel-bg;
+  border: 1px solid $border-muted;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 480px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 255, 51, 0.05);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  .badge {
+    font-family: "Roboto Mono", monospace;
+    font-size: 10px;
+    color: $accent-neon;
+    letter-spacing: 0.06em;
+  }
+
+  .mainTitle {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 4px 0 0 0;
+    color: $text-bright;
+  }
+
+  .closeBtn {
+    background: none;
+    border: 1px solid $border-muted;
+    color: $text-dark;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Roboto Mono", monospace;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $accent-neon;
+      color: $accent-neon;
+    }
+  }
+}
+
+.description {
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+  color: $text-dark;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+
+  .presetCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid $border-muted;
+    border-radius: 6px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .cupCount {
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      color: $text-dark;
+    }
+
+    .amount {
+      font-family: "Rajdhani", sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: $text-bright;
+    }
+
+    .presetNote {
+      font-family: "Roboto Mono", monospace;
+      font-size: 8px;
+      color: $text-dark;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    &.activePreset {
+      background: rgba(201, 255, 51, 0.08);
+      border-color: $accent-neon;
+
+      .cupCount, .amount {
+        color: $accent-neon;
+      }
+    }
+
+    &:hover {
+      border-color: rgba(201, 255, 51, 0.4);
+    }
+  }
+}
+
+.actionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .primaryBtn {
+    background: $accent-neon;
+    border: none;
+    color: #000;
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 16px rgba(201, 255, 51, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .secondaryBtn {
+    background: none;
+    border: 1px dashed $border-muted;
+    color: $text-dark;
+    font-family: "Roboto Mono", monospace;
+    font-size: 11px;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: $text-bright;
+      color: $text-bright;
+    }
+
+    &.copied {
+      border-color: $accent-neon;
+      color: $accent-neon;
+      border-style: solid;
+    }
+  }
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 12px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 9px;
+  color: $text-dark;
+
+  .accentText {
+    color: $accent-neon;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
